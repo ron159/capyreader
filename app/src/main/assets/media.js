@@ -1,3 +1,5 @@
+const EAGER_IMAGE_COUNT = 3;
+
 function configureVideoTags() {
   [...document.getElementsByTagName("video")].forEach((v) => {
     v.setAttribute("preload", "auto");
@@ -33,47 +35,6 @@ function addImageClickListeners() {
       e.preventDefault();
       Android.showImageDialog(img.src);
     });
-  });
-}
-
-/**
- * @param {HTMLImageElement} img
- */
-function setupImageLoadHandler(img) {
-  if (img.classList.contains("loaded")) {
-    return;
-  }
-
-  img.onload = () => img.classList.add("loaded");
-  img.onerror = () => img.classList.add("loaded");
-
-  // Check after attaching - catches race condition
-  if (img.complete) {
-    img.classList.add("loaded");
-  }
-}
-
-function addImageLoadListeners() {
-  [...document.getElementsByTagName("img")].forEach(setupImageLoadHandler);
-}
-
-function observeImages() {
-  const observer = new MutationObserver((mutations) => {
-    mutations.forEach((mutation) => {
-      mutation.addedNodes.forEach((node) => {
-        if (node.nodeName === "IMG") {
-          setupImageLoadHandler(/** @type {HTMLImageElement} */ (node));
-        } else if (/** @type {Element} */ (node).querySelectorAll) {
-          /** @type {Element} */
-          (node).querySelectorAll("img").forEach(setupImageLoadHandler);
-        }
-      });
-    });
-  });
-
-  observer.observe(document.body, {
-    childList: true,
-    subtree: true,
   });
 }
 
@@ -217,9 +178,7 @@ function postProcessContent(baseUrl, hideImages) {
     if (hideImages) {
       img.remove();
     } else {
-      if (index > 0) {
-        img.loading = "lazy";
-      }
+      img.loading = index < EAGER_IMAGE_COUNT ? "eager" : "lazy";
       if (baseUrl) {
         const src = img.getAttribute("src");
         if (src && !src.startsWith("http") && !src.startsWith("data:")) {
@@ -367,8 +326,6 @@ function resetAudioPlayState() {
 
 window.onload = () => {
   addImageClickListeners();
-  addImageLoadListeners();
-  observeImages();
   addEmbedListeners();
   configureVideoTags();
   Android.requestAudioState();
