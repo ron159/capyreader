@@ -339,16 +339,13 @@ class ArticleScreenViewModel(
     }
 
     fun selectFeed(feedID: String, folderTitle: String? = null) {
-        viewModelScope.launchIO {
-            val feed = account.findFeed(feedID) ?: return@launchIO
-            updateFilter(
-                ArticleFilter.Feeds(
-                    feedID = feed.id,
-                    folderTitle = folderTitle,
-                    feedStatus = currentStatus
-                )
+        updateFilter(
+            ArticleFilter.Feeds(
+                feedID = feedID,
+                folderTitle = folderTitle,
+                feedStatus = currentStatus
             )
-        }
+        )
     }
 
     fun selectSavedSearch(savedSearchID: String) {
